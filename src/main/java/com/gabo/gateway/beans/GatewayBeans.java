@@ -1,5 +1,7 @@
 package com.gabo.gateway.beans;
 
+import java.util.Set;
+
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -48,6 +50,13 @@ public class GatewayBeans{
         .routes()
         .route(route -> route
             .path("/companies-crud/company/**")
+            .filters(filter -> {
+                filter.circuitBreaker(config -> config
+                .setName("gateway-cb")
+                .setStatusCodes(Set.of("500", "400"))
+                .setFallbackUri("forward:/companies-crud-fallback/company/*"));
+                return filter;
+            })
             .uri("lb://companies-crud")
         )
         .route(route -> route
